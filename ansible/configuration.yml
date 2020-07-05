@@ -1,0 +1,44 @@
+---
+- name: Configure Raddit VM
+  hosts: raddit_app
+  tasks:
+    - name: Install Ruby
+      apt:
+        name:
+          - ruby-full
+          - build-essential
+        state: present
+        update-cache: yes
+
+    - name: Install Bundler
+      gem:
+        name: bundler
+        state: present
+        user-install: no
+
+    - name: Add MongoDB APT key
+      apt_key:
+        id: EA312927
+        keyserver: keyserver.ubuntu.com
+
+    - name: Add MongoDB source
+      apt_repository:
+        repo: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse
+        state: present
+
+    - name: Install MongoDB
+      apt:
+        name: mongodb-org
+        state: present
+        update-cache: yes
+
+    - name: Start MongoDB
+      systemd:
+        name: mongod
+        state: started
+        enabled: yes
+
+    - name: Download raddit systemd file
+      get_url:
+        url: https://gist.githubusercontent.com/Artemmkin/ce82397cfc69d912df9cd648a8d69bec/raw/7193a36c9661c6b90e7e482d256865f085a853f2/raddit.service
+        dest: /etc/systemd/system/raddit.service
